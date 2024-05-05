@@ -26,7 +26,7 @@ The project is currently in the initial development phase, focusing on the core 
 
 ### 🤝 Contributing
 
-This project is open to contributions from passionate developers who share the vision of creating a next-level Password game. Whether you have expertise in C#, ASP.NET, React, AI, or simply a love for games, your contributions are invaluable.
+> > > > > just let me cook
 
 ### 🔮 Join the Journey
 
