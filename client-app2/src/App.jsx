@@ -8,18 +8,16 @@ import Chat from "./components/Chat";
 import TeamDisplay from "./components/TeamDisplay";
 
 function App() {
-  useEffect(() => {
-    // Establish SignalR connection and handle incoming messages
-    // ...
-  }, []);
-  const [gameState, setGameState] = useState("lobby"); // Example using a string
+  const [gameState, setGameState] = useState("lobby");
+  const [messages, setMessages] = useState([]);
+
   const handleGuessSubmit = (guess) => {
     // Send the guess to the backend using SignalR
     // ...
     // Update the game state based on the response from the backend
     // ...
   };
-  const [messages, setMessages] = useState([]);
+
   const handleMessageSend = (messageText) => {
     // Send the message to the backend using SignalR
     // ...
@@ -30,6 +28,38 @@ function App() {
       { sender: "currentPlayerName", text: messageText },
     ]);
   };
+  const [connection, setConnection] = useState(null);
+
+  useEffect(() => {
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("http://localhost:5000/gamehub") // Replace with your backend URL
+      .withAutomaticReconnect()
+      .build();
+
+    setConnection(newConnection);
+  }, []);
+
+  useEffect(() => {
+    if (connection) {
+      connection
+        .start()
+        .then(() => console.log("Connected to SignalR hub"))
+        .catch((err) => console.log("Error connecting to SignalR hub:", err));
+
+      connection.on("NewRound", (round) => {
+        // Update game state with new round information
+        // ...
+      });
+
+      // ... other event handlers ...
+
+      connection.on("GuessIncorrect", () => {
+        // Display feedback to the player indicating an incorrect guess
+        // ...
+      });
+    }
+  }, [connection]);
+
   return (
     <div className="app">
       <GameBoard gameState={gameState} onGuessSubmit={handleGuessSubmit} />

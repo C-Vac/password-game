@@ -52,7 +52,7 @@ public class GameHub : Hub
             // If both teams have two players, start the game
             if (gameRoom.CanStartGame())
             {
-                await StartGame(roomId);
+                await Start(roomId);
             }
         }
         else
@@ -61,7 +61,7 @@ public class GameHub : Hub
         }
     }
 
-    public async Task StartGame(string roomId)
+    public async Task Start(string roomId)
     {
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
@@ -72,25 +72,35 @@ public class GameHub : Hub
             await Clients.Group(roomId).SendAsync("GameStarted");
 
             // Start the first round
-            await StartNewRound(roomId);
+            await StartRound(roomId);
         }
     }
-    public async Task StartNewRound(string roomId)
+    public async Task StartRound(string roomId)
     {
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
             // End the previous round (if any) and update scores
             if (gameRoom.State == GameState.Guessing)
             {
-                // Handle the end of the previous round
-                // ...
+                // Check if any team guessed the password correctly
+                string winningTeamId = gameRoom.CheckIfRoundWon();
+                if (winningTeamId != null)
+                {
+                    // Award a point to the winning team
+                    Team? winningTeam = gameRoom.Teams.FirstOrDefault(t => t.TeamId == winningTeamId);
+                    if (winningTeam != null)
+                    {
+                        winningTeam.AddPoints(1);
+                        await Clients.Group(roomId).SendAsync("RoundEnd", winningTeamId);
+                    }
+                }
+                else
+                {
+                    // No team guessed correctly, move to the next round without awarding points
+                    await Clients.Group(roomId).SendAsync("RoundEnd", gameRoom.CurrentRound, gameRoom.CurrentClue);
+                }
+
             }
-
-            // Start a new round
-            gameRoom.StartNewRound();
-
-            // Notify all clients in the room about the new round and potentially start a new round or end the game.
-            await Clients.Group(roomId).SendAsync("NewRound");
         }
     }
     public async Task EndRound(string roomId, string winningTeamId)
@@ -98,11 +108,8 @@ public class GameHub : Hub
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
             // Update the score for the winning team
-            Team winningTeam = gameRoom.Teams.FirstOrDefault(t => t.TeamId == winningTeamId);
-            if (winningTeam != null)
-            {
-                winningTeam.AddPoints(1);
-            }
+            Team? winningTeam = gameRoom.Teams.FirstOrDefault(t => t?.TeamId == winningTeamId);
+            winningTeam?.AddPoints(1);
 
             // Check if the game has ended
             if (gameRoom.IsGameOver())
@@ -114,7 +121,7 @@ public class GameHub : Hub
             else
             {
                 // Start a new round
-                await StartNewRound(roomId);
+                await StartRound(roomId);
             }
         }
     }
@@ -147,6 +154,15 @@ public class GameHub : Hub
             // Check if the guess is correct
             string winningTeamId = gameRoom.CheckGuess(guess);
 
+            Player? guessingPlayer = gameRoom.Teams.
+                SelectMany(t => t.Players)
+                .FirstOrDefault(p => p.ConnectionId == Context.ConnectionId);
+
+            if (guessingPlayer != null)
+            {
+                // Store the last guess
+                guessingPlayer.LastGuess = guess;
+            }
             if (winningTeamId != null)
             {
                 // Notify all clients in the room of the correct guess and winning team
@@ -158,7 +174,7 @@ public class GameHub : Hub
             else
             {
                 // Notify the client that the guess was incorrect
-                // await Clients.Caller.SendAsync(???);
+                await Clients.Caller.SendAsync("GuessIncorrect");
             }
         }
     }

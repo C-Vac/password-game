@@ -6,6 +6,8 @@ namespace PasswordGameWebAPI.Models
         public string Name { get; set; }
         public string ConnectionId { get; set; } // To identify the connected client
         public bool IsClueGiver { get; set; }
+        public string LastGuess { get; set; }
+
 
         public Player(string name, string connectionId)
         {

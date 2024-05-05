@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PasswordGameWebAPI.Hubs;
+using System.Timers;
 
 namespace PasswordGameWebAPI.Models;
 
@@ -20,13 +21,45 @@ public class GameRoom
     public GameState State { get; private set; } = GameState.Lobby;
     public string CurrentClue { get; private set; }
     public int CurrentRound { get; private set; } = 1;
-    // ... other properties as needed ...
-    private List<string> _passwords; // List to store potential passwords
+    private List<string> _passwords;
     private string _currentPassword;
+
+    // Timers
+    private System.Timers.Timer _clueTimer;
+    private System.Timers.Timer _guessTimer;
 
     public GameRoom(string roomId)
     {
         RoomId = roomId;
+    }
+    public void StartCluePhase()
+    {
+        // Start the clue timer
+        _clueTimer = new System.Timers.Timer(5000); // 5 seconds
+        _clueTimer.Elapsed += OnClueTimerElapsed;
+        _clueTimer.Start();
+    }
+
+    private void OnClueTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        // Handle clue timer timeout
+        // ...
+    }
+
+    // ... similar implementation for guess timer ...
+
+    public string CheckIfRoundWon()
+    {
+        // Check if any team has guessed the password correctly
+        foreach (Team team in Teams)
+        {
+            if (team.Players.Any(p => p.LastGuess != null && p.LastGuess.Equals(_currentPassword, StringComparison.OrdinalIgnoreCase)))
+            {
+                return team.TeamId;
+            }
+        }
+
+        return null; // No team won the round
     }
     public void GeneratePassword()
     {
