@@ -1,3 +1,46 @@
+# Dependencies
+node_modules
+packages
 bin
 obj
+
+# Testing
+coverage
+
+# Production
+build
+dist
+
+# VS Code
 .vscode
+
+# User-specific files
+.DS_Store
+*.suo
+*.user
+*.sln.docstates
+
+# Windows
+ehthumbs.db
+Desktop.ini
+
+# JetBrains Rider
+.idea/
+
+# Compiled source code
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Logs and debugging
+*.log
+*.pid
+*.db.lock
+*.hprof
+
+# System files
+.DS_Store
+Thumbs.db
