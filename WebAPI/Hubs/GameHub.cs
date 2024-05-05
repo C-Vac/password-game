@@ -97,28 +97,25 @@ public class GameHub : Hub
     {
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
-            // Update the score for the winning team 
-            Team winningTeam = gameRoom.Teams.
-            FirstOrDefault(t => t.TeamId == winningTeamId);
-
+            // Update the score for the winning team
+            Team winningTeam = gameRoom.Teams.FirstOrDefault(t => t.TeamId == winningTeamId);
             if (winningTeam != null)
             {
                 winningTeam.AddPoints(1);
             }
 
-        }
-        
-        // Check if the game has ended
-        if (gameRoom.IsGameOver())
-        {
-            // Declare the winner and end the game
-            await Clients.Group(roomId).SendAsync("GameOver", winningTeamId);
-            _gameRooms.Remove(roomId); // Remove the game room
-        }
-        else
-        {
-            // Start a new round
-            await StartNewRound(roomId);
+            // Check if the game has ended
+            if (gameRoom.IsGameOver())
+            {
+                // Declare the winner and end the game
+                await Clients.Group(roomId).SendAsync("GameOver", winningTeamId);
+                _gameRooms.Remove(roomId); // Remove the game room
+            }
+            else
+            {
+                // Start a new round
+                await StartNewRound(roomId);
+            }
         }
     }
     public async Task SubmitClue(string roomId, string clue)
