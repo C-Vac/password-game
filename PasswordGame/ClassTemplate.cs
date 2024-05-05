@@ -1,0 +1,2 @@
+namespace Games.Password;
+
