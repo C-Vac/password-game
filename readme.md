@@ -14,16 +14,23 @@ This project is currently in its early stages, laying the foundation for a capti
 
 ### 🚧 Current State
 
-The project is currently in the initial development phase, focusing on the core game logic and mechanics using C#. The provided code establishes the foundation for the game, including player management, team structure, round handling, and basic win conditions. 
+The project has progressed beyond the initial phase. The core game logic and mechanics have been established using C#, providing a solid foundation. Additionally, new projects have been created for both the ASP.NET Web API backend and the React frontend, marking the beginning of the web interface development. 
+
+The API project has undergone some initial customizations to tailor it to the specific needs of the Password game. 
 
 ### 🚀 Roadmap
 
-1.  **Complete Core Game Logic:** Ensure the C# backend provides a robust and bug-free foundation.
-2.  **Develop Web Interface:** Implement the ASP.NET backend and React frontend for a user-friendly online experience. 
-3.  **Integrate AI Opponents:** Introduce AI models with varying difficulty levels for single-player challenges.
-4.  **Implement LLM Password Generation:** Utilize LLMs to generate dynamic and engaging passwords.
-5.  **Deploy to GoblinLife:** Host the game on www.goblinlife.org and make it accessible to the world.
-
+1.  **Finalize Core Game Logic:** Thoroughly review and refine the C# backend to ensure robustness and address any remaining edge cases.
+2.  **Develop Web API Endpoints:** Build out the necessary API endpoints to support game interactions, including player management, team creation, round handling, and password generation.
+3.  **Implement React Frontend:** Design and develop the React frontend to provide a user-friendly and engaging interface for playing the game.
+4.  **Integrate API and Frontend:** Connect the React frontend with the ASP.NET Web API to enable real-time communication and game interactions.
+5.  **Introduce AI Opponents (Optional):** Explore the possibility of adding AI opponents with varying difficulty levels to enhance single-player gameplay.
+6.  **Implement LLM Password Generation (Optional):** Investigate the use of Large Language Models (LLMs) to generate dynamic and creative passwords, adding an extra layer of challenge and engagement.
+7.  **Deployment:**
+    *   **Containerization:** Package the application components into Docker containers for portability and scalability.
+    *   **Cloud Hosting:** Deploy the application to a cloud platform like Google Cloud Run for easy access and management.
+    *   **Consider NGINX (Optional):** Evaluate the need for an NGINX server for advanced routing, load balancing, or API gateway functionality.
+8.  **Launch on GoblinLife:** Once the game is fully developed and tested, host it on www.goblinlife.org to make it accessible to a wider audience.
 ### 🤝 Contributing
 
 > > > > > just let me cook
