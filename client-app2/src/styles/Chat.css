@@ -1,0 +1,25 @@
+/* chat.css */
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 300px; /* Adjust as needed */
+}
+
+.chat-display {
+  flex-grow: 1;
+  overflow-y: scroll;
+}
+
+.chat-display ul {
+  list-style: none;
+  padding: 0;
+}
+
+.chat-input {
+  display: flex;
+}
+
+.chat-input input[type="text"] {
+  flex-grow: 1;
+}

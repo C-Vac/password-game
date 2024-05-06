@@ -16,17 +16,17 @@ public enum GameState
 
 public class GameRoom
 {
-    public string RoomId { get; }
+    public string RoomId { get; } = "";
     public List<Team> Teams { get; } = new List<Team>();
     public GameState State { get; private set; } = GameState.Lobby;
-    public string CurrentClue { get; private set; }
+    public string? CurrentClue { get; private set; } = "";
     public int CurrentRound { get; private set; } = 1;
-    private List<string> _passwords;
-    private string _currentPassword;
+    private List<string> _passwords = new();
+    private string _currentPassword = "";
 
     // Timers
-    private System.Timers.Timer _clueTimer;
-    private System.Timers.Timer _guessTimer;
+    private System.Timers.Timer? _clueTimer;
+    private System.Timers.Timer? _guessTimer;
 
     public GameRoom(string roomId)
     {
@@ -34,21 +34,23 @@ public class GameRoom
     }
     public void StartCluePhase()
     {
-        // Start the clue timer
+        State = GameState.ClueGiving;
+
         _clueTimer = new System.Timers.Timer(5000); // 5 seconds
         _clueTimer.Elapsed += OnClueTimerElapsed;
         _clueTimer.Start();
     }
 
-    private void OnClueTimerElapsed(object sender, ElapsedEventArgs e)
+    private void OnClueTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        // Handle clue timer timeout
+        _clueTimer?.Stop();
+        // Transition to guessing phase or end the round
         // ...
     }
 
     // ... similar implementation for guess timer ...
 
-    public string CheckIfRoundWon()
+    public string? CheckIfRoundWon()
     {
         // Check if any team has guessed the password correctly
         foreach (Team team in Teams)
@@ -86,16 +88,16 @@ public class GameRoom
         // TODO: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
     }
 
-    public string CheckGuess(string guess)
+    public string? CheckGuess(string guess)
     {
         if (guess.Equals(_currentPassword, StringComparison.OrdinalIgnoreCase))
         { // Find the player who made the guess 
-            Player guessingPlayer = Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.ConnectionId == null); // TODO: MAKE THIS WORK --> Context.ConnectionId); 
+            Player? guessingPlayer = Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.ConnectionId == null); // TODO: MAKE THIS WORK --> Context.ConnectionId); 
 
             if (guessingPlayer != null)
             {
                 // Find the team of the guessing player
-                Team winningTeam = Teams.FirstOrDefault(t => t.Players.Contains(guessingPlayer));
+                Team? winningTeam = Teams.FirstOrDefault(t => t.Players.Contains(guessingPlayer));
                 if (winningTeam != null)
                 {
                     winningTeam.AddPoints(1);
@@ -121,7 +123,7 @@ public class GameRoom
     public string AddPlayerToTeam(string playerName)
     {
         // Find a team with less than 2 players
-        Team team = Teams.FirstOrDefault(t => t.Players.Count < 2);
+        Team? team = Teams.FirstOrDefault(t => t.Players.Count < 2);
 
         // If no such team exists, create a new one
         if (team == null)

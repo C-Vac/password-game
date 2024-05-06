@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import ChatDisplay from './ChatDisplay';
+import ChatInput from './ChatInput';
+import "../styles/Chat.css";
 
 function Chat({ messages, onMessageSend }) {
   const [newMessage, setNewMessage] = useState('');
@@ -7,9 +10,8 @@ function Chat({ messages, onMessageSend }) {
 
   return (
     <div className="chat">
-      {/* Display chat messages here */}
-      <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} />
-      <button onClick={() => onMessageSend(newMessage)}>Send</button>
+      <ChatDisplay messages={messages} />
+      <ChatInput onMessageSend={onMessageSend} />
     </div>
   );
 }

@@ -83,7 +83,7 @@ public class GameHub : Hub
             if (gameRoom.State == GameState.Guessing)
             {
                 // Check if any team guessed the password correctly
-                string winningTeamId = gameRoom.CheckIfRoundWon();
+                string? winningTeamId = gameRoom.CheckIfRoundWon();
                 if (winningTeamId != null)
                 {
                     // Award a point to the winning team
@@ -152,7 +152,7 @@ public class GameHub : Hub
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
             // Check if the guess is correct
-            string winningTeamId = gameRoom.CheckGuess(guess);
+            string? winningTeamId = gameRoom.CheckGuess(guess);
 
             Player? guessingPlayer = gameRoom.Teams.
                 SelectMany(t => t.Players)
@@ -178,4 +178,9 @@ public class GameHub : Hub
             }
         }
     }
+    public async Task SendMessage(ChatMessage message)
+{
+    // Broadcast the message to all clients in the room
+    await Clients.Group(Context.ConnectionId).SendAsync("ReceiveMessage", message);
+}
 }
