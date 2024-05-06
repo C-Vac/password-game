@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PasswordGameWebAPI.Hubs;
 using System.Timers;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PasswordGameWebAPI.Models;
 
@@ -23,14 +24,30 @@ public class GameRoom
     public int CurrentRound { get; private set; } = 1;
     private List<string> _passwords = new();
     private string _currentPassword = "";
+    public int PointsToWin = 3;
+    private readonly GameHub _hub;
 
     // Timers
     private System.Timers.Timer? _clueTimer;
     private System.Timers.Timer? _guessTimer;
 
-    public GameRoom(string roomId)
+    public GameRoom(string roomId, GameHub hub)
     {
         RoomId = roomId;
+        _hub = hub;
+    }
+
+    // Start Game Logic
+    public bool CanStartGame()
+    {
+        // Check if there are at least two teams with two players each
+        return Teams.Count >= 2 && Teams.All(t => t.Players.Count == 2);
+    }
+
+    public void StartGame()
+    {
+        State = GameState.Started;
+        // ... additional initialization logic ...
     }
     public void StartCluePhase()
     {
@@ -44,12 +61,37 @@ public class GameRoom
     private void OnClueTimerElapsed(object? sender, ElapsedEventArgs e)
     {
         _clueTimer?.Stop();
-        // Transition to guessing phase or end the round
-        // ...
+        State = GameState.Guessing;
+        StartGuessPhase(); // Start the guessing timer
+        _hub.Clients.Group(RoomId).SendAsync("ClueTimeUp"); // Notify clients
     }
 
-    // ... similar implementation for guess timer ...
+    public void StartGuessPhase()
+    {
+        State = GameState.Guessing;
+        _guessTimer = new System.Timers.Timer(10000); // 10 seconds (example)
+        _guessTimer.Elapsed += OnGuessTimerElapsed;
+        _guessTimer.Start();
+    }
+    private void OnGuessTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        _guessTimer?.Stop();
 
+        // Check if any team guessed the password correctly
+        string? winningTeamId = CheckIfRoundWon();
+
+        if (IsGameOver())
+        {
+            // Game over, declare the winner
+            _hub.Clients.Group(RoomId).SendAsync("GameOver", winningTeamId);
+        }
+        else
+        {
+            // Start a new round
+            StartNewRound();
+            _hub.Clients.Group(RoomId).SendAsync("NewRound", CurrentRound, CurrentClue);
+        }
+    }
     public string? CheckIfRoundWon()
     {
         // Check if any team has guessed the password correctly
@@ -84,15 +126,16 @@ public class GameRoom
     }
     public bool IsGameOver()
     {
-        return false;
-        // TODO: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
+        return Teams.Any(t => t.Score >= PointsToWin);
     }
 
-    public string? CheckGuess(string guess)
+
+    public string? CheckGuess(string guess, string connectionId)
     {
         if (guess.Equals(_currentPassword, StringComparison.OrdinalIgnoreCase))
-        { // Find the player who made the guess 
-            Player? guessingPlayer = Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.ConnectionId == null); // TODO: MAKE THIS WORK --> Context.ConnectionId); 
+        {
+            // Find the player who made the guess 
+            Player? guessingPlayer = Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.ConnectionId == connectionId);
 
             if (guessingPlayer != null)
             {
@@ -120,7 +163,7 @@ public class GameRoom
         }
         State = GameState.ClueGiving;
     }
-    public string AddPlayerToTeam(string playerName)
+    public string AddPlayerToTeam(string playerName, string connectionId)
     {
         // Find a team with less than 2 players
         Team? team = Teams.FirstOrDefault(t => t.Players.Count < 2);
@@ -133,26 +176,9 @@ public class GameRoom
         }
 
         // Add the player to the team
-        team.AddPlayer(new Player(playerName, "")); // TODO: inject connectionId
+        team.AddPlayer(new Player(playerName, connectionId));
 
         return team.TeamId;
-    }
-
-    public bool CanStartGame()
-    {
-        // Check if there are at least two teams with two players each
-        return Teams.Count >= 2 && Teams.All(t => t.Players.Count == 2);
-    }
-
-    public void StartGame()
-    {
-        State = GameState.Started;
-        // ... additional initialization logic ...
-    }
-
-    public void StartGuessPhase()
-    {
-        State = GameState.Guessing;
     }
 
     public void SetClue(string clue)

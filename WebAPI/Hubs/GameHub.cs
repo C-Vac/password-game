@@ -18,10 +18,10 @@ public class GameHub : Hub
         string roomId = Guid.NewGuid().ToString();
 
         // Create a new game room
-        var gameRoom = new GameRoom(roomId);
+        var gameRoom = new GameRoom(roomId, this);
 
         // Add the creating player to a team
-        string teamId = gameRoom.AddPlayerToTeam(playerName);
+        string teamId = gameRoom.AddPlayerToTeam(playerName, Context.ConnectionId);
 
         // Add the game room to the dictionary
         _gameRooms.Add(roomId, gameRoom);
@@ -38,7 +38,7 @@ public class GameHub : Hub
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
             // Add the player to a team
-            string teamId = gameRoom.AddPlayerToTeam(playerName);
+            string teamId = gameRoom.AddPlayerToTeam(playerName, Context.ConnectionId);
 
             // Join the group for the specific room
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
@@ -152,7 +152,8 @@ public class GameHub : Hub
         if (_gameRooms.TryGetValue(roomId, out var gameRoom))
         {
             // Check if the guess is correct
-            string? winningTeamId = gameRoom.CheckGuess(guess);
+            string? winningTeamId = gameRoom.CheckGuess(guess, Context.ConnectionId); // Pass connection ID
+
 
             Player? guessingPlayer = gameRoom.Teams.
                 SelectMany(t => t.Players)

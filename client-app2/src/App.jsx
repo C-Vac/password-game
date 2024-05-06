@@ -37,7 +37,7 @@ function App() {
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("http://localhost:5000/gamehub") // TODO: Change this to the URL of the SignalR hub and also make sure ASP.NET Core app is running
+      .withUrl("http://localhost:5281/gamehub")
       .withAutomaticReconnect()
       .build();
 
