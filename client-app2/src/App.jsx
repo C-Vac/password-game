@@ -1,16 +1,18 @@
 import logo from "./logo.svg";
 import "./styles/App.css";
 import React, { useState, useEffect } from "react";
-import { HubConnectionBuilder } from "@microsoft/signalr";
 
+// SignalR
+import { HubConnectionBuilder } from "@microsoft/signalr";
+// Redux
+import { useSelector, useDispatch } from "react-redux";
+// Custom game components
 import GameBoard from "./components/GameBoard";
 import Chat from "./components/Chat";
 import TeamDisplay from "./components/TeamDisplay";
-import ChatDisplay from "./components/ChatDisplay";
-import ChatInput from "./components/ChatInput";
 
 function App() {
-  const [gameState, setGameState] = useState("lobby");
+  const gameState = useSelector((state) => state.gameState);
   const [messages, setMessages] = useState([]);
   const [connection, setConnection] = useState(null);
 
