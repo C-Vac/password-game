@@ -28,8 +28,11 @@ public class GameRoom
     private readonly GameHub _hub;
 
     // Timers
+
     private System.Timers.Timer? _clueTimer;
     private System.Timers.Timer? _guessTimer;
+
+    // Constructor
 
     public GameRoom(string roomId, GameHub hub)
     {
@@ -58,20 +61,22 @@ public class GameRoom
         _clueTimer.Start();
     }
 
-    private void OnClueTimerElapsed(object? sender, ElapsedEventArgs e)
-    {
-        _clueTimer?.Stop();
-        State = GameState.Guessing;
-        StartGuessPhase(); // Start the guessing timer
-        _hub.Clients.Group(RoomId).SendAsync("ClueTimeUp"); // Notify clients
-    }
-
     public void StartGuessPhase()
     {
         State = GameState.Guessing;
         _guessTimer = new System.Timers.Timer(10000); // 10 seconds (example)
         _guessTimer.Elapsed += OnGuessTimerElapsed;
         _guessTimer.Start();
+    }
+
+    // Timer event handlers
+
+    private void OnClueTimerElapsed(object? sender, ElapsedEventArgs e)
+    {
+        _clueTimer?.Stop();
+        State = GameState.Guessing;
+        StartGuessPhase(); // Start the guessing timer
+        _hub.Clients.Group(RoomId).SendAsync("ClueTimeUp"); // Notify clients
     }
     private void OnGuessTimerElapsed(object? sender, ElapsedEventArgs e)
     {
@@ -92,19 +97,29 @@ public class GameRoom
             _hub.Clients.Group(RoomId).SendAsync("NewRound", CurrentRound, CurrentClue);
         }
     }
-    public string? CheckIfRoundWon()
+
+    // Game logic
+
+    public void StartNewRound()
     {
-        // Check if any team has guessed the password correctly
+        CurrentRound++;
+        GeneratePassword();
+        CurrentClue = null;
+        // Switch clue giver and guesser roles within each team
         foreach (Team team in Teams)
         {
-            if (team.Players.Any(p => p.LastGuess != null && p.LastGuess.Equals(_currentPassword, StringComparison.OrdinalIgnoreCase)))
-            {
-                return team.TeamId;
-            }
+            team.SwitchRoles();
         }
-
-        return null; // No team won the round
+        State = GameState.ClueGiving;
     }
+
+    public void SetClue(string clue)
+    {
+        CurrentClue = clue;
+    }
+
+    // Password Generation
+
     public void GeneratePassword()
     {
         if (_passwords == null || _passwords.Count == 0)
@@ -119,6 +134,15 @@ public class GameRoom
         _currentPassword = _passwords[index];
         _passwords.RemoveAt(index); // Remove the used password
     }
+    private List<string> LoadPasswordsFromFile(string filePath)
+    {
+        // Implement file reading logic here
+        // ...
+        return new List<string>(); // Replace with actual password list
+    }
+
+    // Boolean checks
+
     public bool IsValidClue(string clue)
     {
         // Check if the clue is a substring of the password (case-insensitive)
@@ -129,6 +153,7 @@ public class GameRoom
         return Teams.Any(t => t.Score >= PointsToWin);
     }
 
+    // Password/guess match check
 
     public string? CheckGuess(string guess, string connectionId)
     {
@@ -143,7 +168,7 @@ public class GameRoom
                 Team? winningTeam = Teams.FirstOrDefault(t => t.Players.Contains(guessingPlayer));
                 if (winningTeam != null)
                 {
-                    winningTeam.AddPoints(1);
+                    winningTeam.AddPoints(1); // TODO: add variation in points won per round, etc.
                     return winningTeam.TeamId;
                 }
             }
@@ -151,18 +176,23 @@ public class GameRoom
 
         return null;
     }
-    public void StartNewRound()
+
+    public string? CheckIfRoundWon()
     {
-        CurrentRound++;
-        GeneratePassword();
-        CurrentClue = null;
-        // Switch clue giver and guesser roles within each team
+        // Check if any team has guessed the password correctly
         foreach (Team team in Teams)
         {
-            team.SwitchRoles();
+            if (team.Players.Any(p => p.LastGuess != null && p.LastGuess.Equals(_currentPassword, StringComparison.OrdinalIgnoreCase)))
+            {
+                return team.TeamId;
+            }
         }
-        State = GameState.ClueGiving;
+
+        return null; // No team won the round
     }
+
+    // Lobby helper methods
+
     public string AddPlayerToTeam(string playerName, string connectionId)
     {
         // Find a team with less than 2 players
@@ -179,18 +209,5 @@ public class GameRoom
         team.AddPlayer(new Player(playerName, connectionId));
 
         return team.TeamId;
-    }
-
-    public void SetClue(string clue)
-    {
-        CurrentClue = clue;
-    }
-
-    // ... other methods for managing rounds, turns, scores, etc. ...
-    private List<string> LoadPasswordsFromFile(string filePath)
-    {
-        // Implement file reading logic here
-        // ...
-        return new List<string>(); // Replace with actual password list
     }
 }

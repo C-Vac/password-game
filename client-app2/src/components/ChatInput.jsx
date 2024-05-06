@@ -6,7 +6,7 @@ function ChatInput({ onMessageSend }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     onMessageSend(messageText);
-    setMessageText("");
+    setMessageText('');
   };
 
   return (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import "../styles/GameBoard.css"
 
 function GameBoard({ gameState, onGuessSubmit }) {
   const [guess, setGuess] = useState('');
