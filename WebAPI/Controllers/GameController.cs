@@ -51,4 +51,69 @@ public class GameController : ControllerBase
             return NotFound("Room not found.");
         }
     }
+
+    [HttpPost("changeTeam/{roomId}")]
+    public IActionResult ChangeTeam(string roomId, [FromBody] ChangeTeamRequest request)
+    {
+        if (_gameRooms.TryGetValue(roomId, out var gameRoom))
+        {
+            // Find the player
+            Player? player = gameRoom.Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.ConnectionId == request.ConnectionId);
+
+            if (player != null)
+            {
+                // Remove the player from their current team
+                Team? currentTeam = gameRoom.Teams.FirstOrDefault(t => t.Players.Contains(player));
+                if (currentTeam != null)
+                {
+                    currentTeam.RemovePlayer(player);
+                }
+
+                // Add the player to the new team
+                Team? newTeam = gameRoom.Teams.FirstOrDefault(t => t.TeamId == request.NewTeamId);
+                if (newTeam != null)
+                {
+                    newTeam.AddPlayer(player);
+
+                    // Notify all clients in the room about the team change
+                    _hubContext.Clients.Group(roomId).SendAsync("PlayerChangedTeam", player.Name, request.NewTeamId);
+
+                    return Ok();
+                }
+            }
+
+            return BadRequest("Invalid player or team.");
+        }
+        else
+        {
+            return NotFound("Room not found.");
+        }
+    }
+
+    [HttpPost("changeName/{roomId}")]
+public IActionResult ChangeName(string roomId, [FromBody] ChangeNameRequest request)
+{
+    if (_gameRooms.TryGetValue(roomId, out var gameRoom))
+    {
+        // Find the player
+        Player? player = gameRoom.Teams.SelectMany(t => t.Players).FirstOrDefault(p => p.ConnectionId == request.ConnectionId);
+
+        if (player != null)
+        {
+            // Update the player's name
+            player.Name = request.NewName;
+
+            // Notify all clients in the room about the name change
+            _hubContext.Clients.Group(roomId).SendAsync("PlayerChangedName", player.Name);
+
+            return Ok();
+        }
+
+        return BadRequest("Invalid player.");
+    }
+    else
+    {
+        return NotFound("Room not found.");
+    }
+}
 }
