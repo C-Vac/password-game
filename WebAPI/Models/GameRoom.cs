@@ -6,15 +6,6 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace PasswordGameWebAPI.Models;
 
-public enum GameState
-{
-    Lobby,
-    Started,
-    ClueGiving,
-    Guessing,
-    GameOver
-}
-
 public class GameRoom
 {
     public string RoomId { get; } = "";

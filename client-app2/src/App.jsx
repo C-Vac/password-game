@@ -6,6 +6,9 @@ import React, { useState, useEffect } from "react";
 import { HubConnectionBuilder } from "@microsoft/signalr";
 // Redux
 import { useSelector, useDispatch } from "react-redux";
+// Axios
+import axios from "axios";
+
 // Custom game components
 import GameBoard from "./components/GameBoard";
 import Chat from "./components/Chat";
