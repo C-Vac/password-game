@@ -4,20 +4,61 @@ import React, { useState, useEffect } from "react";
 
 // SignalR
 import { HubConnectionBuilder } from "@microsoft/signalr";
-// Redux
-import { useSelector, useDispatch } from "react-redux";
 // Axios
 import axios from "axios";
+// Redux
+import { useSelector, useDispatch } from "react-redux";
 
 // Custom game components
 import GameBoard from "./components/GameBoard";
-import Chat from "./components/Chat";
 import TeamDisplay from "./components/TeamDisplay";
 
 function App() {
   const gameState = useSelector((state) => state.gameState);
   const [messages, setMessages] = useState([]);
   const [connection, setConnection] = useState(null);
+
+  // ASP.NET API calls
+
+  const createRoom = async () => {
+    try {
+      const response = await axios.post("/api/game/createRoom");
+      // Handle response data (e.g., extract roomId)
+    } catch (error) {
+      // Handle errors
+    }
+  };
+
+  const joinRoom = async (roomId, playerName) => {
+    try {
+      const response = await axios.post(`/api/game/joinRoom/${roomId}`, {
+        playerName,
+      });
+      // Handle response data (e.g., extract teamId)
+    } catch (error) {
+      // Handle errors
+    }
+  };
+
+  const changeTeam = async (roomId, newTeamId) => {
+    try {
+      await axios.post(`/api/game/changeTeam/${roomId}`, { newTeamId });
+      // Handle response or display success message
+    } catch (error) {
+      // Handle errors
+    }
+  };
+
+  const changeName = async (roomId, newName) => {
+    try {
+      await axios.post(`/api/game/changeName/${roomId}`, { newName });
+      // Handle response or display success message
+    } catch (error) {
+      // Handle errors
+    }
+  };
+
+  // SignalR handlers
 
   const handleGuessSubmit = (guess) => {
     // Send the guess to the backend using SignalR
@@ -26,17 +67,9 @@ function App() {
     // ...
   };
 
-  const handleMessageSend = (messageText) => {
-    if (connection) {
-      connection
-        .invoke("SendMessage", { text: messageText })
-        .catch((err) => console.log("Error sending message:", err));
-    }
-    setMessages([
-      ...messages,
-      { sender: "currentPlayerName", text: messageText },
-    ]);
-  };
+
+
+  // SignalR Hub connection
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
@@ -72,11 +105,16 @@ function App() {
 
   return (
     <div className="app">
-      <GameBoard gameState={gameState} onGuessSubmit={handleGuessSubmit} />
-      <Chat messages={messages} onMessageSend={handleMessageSend} />
+      <GameBoard
+        gameState={gameState}
+        onGuessSubmit={handleGuessSubmit}
+        createRoom={createRoom}
+        joinRoom={joinRoom}
+      />
       {/* Render TeamDisplay components for each team */}
     </div>
   );
+
 }
 
 export default App;

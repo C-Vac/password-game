@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 
 function ChatInput({ onMessageSend }) {
-  const [messageText, setMessageText] = useState("");
+  const [messageText, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onMessageSend(messageText);
-    setMessageText('');
-  };
-
+const handleSendMessage = () => {
+  if (messageText.trim() !== "") {
+    onMessageSend(messageText); // Pass message to parent component
+    setMessage(""); // Clear input field
+  }
+};
   return (
-    <form className="chat-input" onSubmit={handleSubmit}>
+    <form className="chat-input" onSubmit={handleSendMessage}>
       <input
         type="text"
         value={messageText}
-        onChange={(e) => setMessageText(e.target.value)}
+        onChange={(e) => setMessage(e.target.value)}
       />
-      <button type="submit">Send</button>
+      <button onClick={handleSendMessage}>Send</button>
     </form>
   );
 }

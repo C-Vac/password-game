@@ -23,3 +23,16 @@
 .chat-input input[type="text"] {
   flex-grow: 1;
 }
+.system-message {
+  color: gray;
+  font-style: italic;
+}
+
+.user-message {
+  color: blue;
+}
+
+.game-event {
+  color: green;
+  font-weight: bold;
+}
